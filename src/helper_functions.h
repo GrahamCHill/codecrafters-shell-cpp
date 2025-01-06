@@ -213,7 +213,6 @@ inline void cd_command(std::istringstream& input_string) {
         } else {
             // Set the new current working directory
             set_current_directory_command(path.string());
-            std::cout << "Current directory: " << path << std::endl;
         }
     } catch (const std::filesystem::filesystem_error& e) {
         std::cout << RED << "cd: " << e.what() << RESET << std::endl;
