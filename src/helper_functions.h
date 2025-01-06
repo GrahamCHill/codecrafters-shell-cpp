@@ -22,6 +22,7 @@
 #endif
 
 inline std::string currentWorkingDirectory;
+void cd_command(std::istringstream& input_string);
 
 // Function to split a string by a delimiter
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
@@ -114,6 +115,11 @@ inline int exit_command(std::istringstream& input_string) {
 }
 
 inline void attempt_exec_command(std::istringstream &input_string, const std::string &input, const std::string& first_word) {
+    if (first_word == "cd") {
+        // Call the built-in `cd_command`
+        cd_command(input_string);
+        return;
+    }
     if (std::string executable = find_executable(first_word); !executable.empty()) {
         // Change current working directory to global currentWorkingDirectory
         if (chdir(currentWorkingDirectory.c_str()) != 0) {
