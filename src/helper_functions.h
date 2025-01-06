@@ -182,44 +182,41 @@ inline void cd_command(std::istringstream& input_string) {
     std::string remaining;
     std::getline(input_string, remaining); // Read the remaining part of the input
     remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
-    std::string currentDirectory = get_current_directory_command();
 
     if (remaining.empty()) {
         std::cout << RED << "cd: missing argument" << RESET << std::endl;
-    } else {
-        // Split the remaining path into parts
-        std::vector<std::string> pathParts;
-        std::istringstream pathStream(remaining);
-        std::string part;
-        
-        while (std::getline(pathStream, part, '/')) {
-            pathParts.push_back(part);
-        }
+        return;
+    }
 
-        // Process each part of the path
-        for (const std::string& part : pathParts) {
-            if (part == "..") {
-                // Move up one directory if not already at the root
-                if (currentDirectory != "/") {
-                    const auto pos = currentDirectory.find_last_of('/');
-                    currentDirectory = currentDirectory.substr(0, pos);
-                    if (currentDirectory.empty()) {
-                        currentDirectory = "/";  // Prevent going above root
-                    }
-                }
-            } else if (!part.empty() && part != ".") {
-                // Append directory part if it's not empty or "."
-                currentDirectory += "/" + part;
-            }
-        }
+    std::string currentDirectory = get_current_directory_command();
+
+    // Check if the path is absolute or relative
+    std::string targetDirectory;
+
+    if (remaining[0] == '/') {
+        // Absolute path, no need to append to current directory
+        targetDirectory = remaining;
+    } else {
+        // Relative path, append to the current working directory
+        targetDirectory = currentDirectory + "/" + remaining;
+    }
+
+    // Normalize the path (resolve relative components like "..")
+    std::filesystem::path path(targetDirectory);
+    try {
+        // Resolve the path
+        path = std::filesystem::canonical(path);
 
         // Check if the directory exists
-        if (!std::filesystem::exists(currentDirectory) || !std::filesystem::is_directory(currentDirectory)) {
-            std::cout << RED << "cd: /" << part << ": No such file or directory" << RESET << std::endl;
+        if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+            std::cout << RED << "cd: " << path << ": No such file or directory" << RESET << std::endl;
         } else {
             // Set the new current working directory
-            set_current_directory_command(currentDirectory);
+            set_current_directory_command(path.string());
+            std::cout << "Current directory: " << path << std::endl;
         }
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cout << RED << "cd: " << e.what() << RESET << std::endl;
     }
 }
 #endif //HELPER_FUNCTIONS_H
