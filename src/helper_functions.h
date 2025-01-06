@@ -164,7 +164,7 @@ inline void pwd_command(std::istringstream& input_string) {
 
 inline void set_initial_directory_command() {
     if (char buffer[PATH_MAX]; getcwd(buffer, sizeof(buffer)) != nullptr) {
-        currentWorkingDirectory.append(buffer); // Print the current working directory
+        currentWorkingDirectory.append("/"); // Print the current working directory
     }
 }
 
