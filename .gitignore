@@ -48,3 +48,5 @@ _deps
 build/
 vcpkg_installed
 .idea/
+cmake-build-debug/
+cmake-build-release
