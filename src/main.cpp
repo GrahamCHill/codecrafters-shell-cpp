@@ -45,13 +45,15 @@ int main() {
 
         switch (get_command(first_word)) {
             case CMD_ECHO: {
+                // Extract the remaining input after the command
                 std::string remaining;
                 std::getline(iss, remaining);
-                remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading space
-                if (iss.peek() != EOF) {
+                if (!remaining.empty()) {
+                    // Remove leading spaces before output
+                    remaining.erase(0, remaining.find_first_not_of(' '));
                     std::cout << remaining << std::endl; // Print the remaining text
                 } else {
-                    std::cout << RED << remaining << RESET << ": not found" << std::endl;
+                    std::cout << RED << "echo: missing argument" << RESET << std::endl;
                 }
                 break;
             }
