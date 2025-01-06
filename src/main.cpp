@@ -51,7 +51,7 @@ int main() {
                     remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
                     std::cout << remaining << std::endl; // Print the remaining text
                 } else {
-                    std::cout << RED << input << RESET << ": command not found" << std::endl;
+                    std::cout << RED << input << RESET << ": not found" << std::endl;
                 }
                 break;
             }
@@ -62,7 +62,7 @@ int main() {
                 if (!second_word.empty() && get_command(second_word) != CMD_UNKNOWN) {
                     std::cout << second_word << " is a shell builtin" << std::endl;
                 } else {
-                    std::cout << RED << input << RESET << ": command not found" << std::endl;
+                    std::cout << RED << input << RESET << ": not found" << std::endl;
                 }
                 break;
             }
