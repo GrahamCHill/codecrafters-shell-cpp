@@ -11,6 +11,10 @@
 #include <sys/wait.h>  // For waitpid
 #include <limits.h>
 
+#ifndef PATH_MAX
+#define PATH_MAX 1024  // Define a custom value if PATH_MAX is not already defined
+#endif
+
 // Function to split a string by a delimiter
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> tokens;
@@ -49,6 +53,7 @@ inline std::string find_executable(const std::string& command) {
 inline void echo_command(std::istringstream& input_string) {
     std::string remaining;
     std::getline(input_string, remaining); // Read the remaining part of the input
+    remaining.erase(0, remaining.find_first_not_of(' '));
     // Check if there's any remaining input
     if (remaining.empty() || remaining.find_first_not_of(' ') == std::string::npos) {
         std::cout << RED << "echo: missing argument" << RESET << std::endl;
