@@ -164,7 +164,7 @@ inline void pwd_command(std::istringstream& input_string) {
 
 inline void set_initial_directory_command() {
     if (char buffer[PATH_MAX]; getcwd(buffer, sizeof(buffer)) != nullptr) {
-        currentWorkingDirectory.append("/"); // Print the current working directory
+        currentWorkingDirectory.append(buffer); // Print the current working directory
     }
 }
 
@@ -195,7 +195,7 @@ inline void cd_command(std::istringstream& input_string) {
 
     if (remaining[0] == '/') {
         // Absolute path, no need to append to current directory
-        const char* home = std::getenv("HOME");
+        const char* home = "/";
         targetDirectory = home + remaining;
     } else {
         // Relative path, append to the current working directory
