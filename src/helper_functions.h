@@ -214,7 +214,7 @@ inline void cd_command(std::istringstream& input_string) {
         } else {
             if (remaining[0] == '/') {
                 // Absolute path, no need to append to current directory
-                path = remaining;
+                path = std::filesystem::canonical(remaining);
             }
             // Set the new current working directory
             set_current_directory_command(path.string());
