@@ -45,13 +45,13 @@ int main() {
 
         switch (get_command(first_word)) {
             case CMD_ECHO: {
+                std::string remaining;
+                std::getline(iss, remaining);
+                remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading space
                 if (iss.peek() != EOF) {
-                    std::string remaining;
-                    std::getline(iss, remaining);
-                    remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
                     std::cout << remaining << std::endl; // Print the remaining text
                 } else {
-                    std::cout << RED << input << RESET << ": not found" << std::endl;
+                    std::cout << RED << remaining << RESET << ": not found" << std::endl;
                 }
                 break;
             }
