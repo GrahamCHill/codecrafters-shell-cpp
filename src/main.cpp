@@ -5,10 +5,12 @@ int main() {
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  // Uncomment this block to pass the first stage
-  std::cout << "$ ";
+  while (true) {
+    std::cout << "$ ";
 
-  std::string input;
-  std::getline(std::cin, input);
-  std::cerr << input << ": command not found" << std::endl;
+    std::string input;
+    std::getline(std::cin, input);
+    std::cerr << input << ": command not found" << std::endl;
+  }
+
 }
