@@ -195,7 +195,8 @@ inline void cd_command(std::istringstream& input_string) {
 
     if (remaining[0] == '/') {
         // Absolute path, no need to append to current directory
-        targetDirectory = std::getenv("HOME") + remaining;
+        const char* home = std::getenv("HOME");
+        targetDirectory = home + remaining;
     } else {
         // Relative path, append to the current working directory
         targetDirectory = currentDirectory + "/" + remaining;
