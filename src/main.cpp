@@ -1,35 +1,16 @@
 #include <iostream>
 #include <sstream>
-#include <unordered_map>
 #include <string>
 #include <cstdlib>
 #include <vector>
-#include <unistd.h> // For access function
+#include <unistd.h>    // For fork, execvp
+#include <sys/wait.h>  // For waitpid
 
 #include "terminal_highlight.h" // Ensure this header is correctly included
-
-// Enum for commands
-enum Command {
-    CMD_ECHO,
-    CMD_TYPE,
-    CMD_EXIT_0,
-    CMD_UNKNOWN
-};
-
-// Function to map string commands to enum
-Command get_command(const std::string& word) {
-    static const std::unordered_map<std::string, Command> command_map = {
-        {"echo", CMD_ECHO},
-        {"type", CMD_TYPE},
-        {"exit", CMD_EXIT_0} // We handle "exit 0" separately
-    };
-
-    const auto it = command_map.find(word);
-    return it != command_map.end() ? it->second : CMD_UNKNOWN;
-}
+#include "commands.h"
 
 // Function to split a string by a delimiter
-std::vector<std::string> split(const std::string& str, const char delimiter) {
+std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> tokens;
     std::string token;
     std::istringstream tokenStream(str);
@@ -42,6 +23,23 @@ std::vector<std::string> split(const std::string& str, const char delimiter) {
 // Function to check if a file exists and is executable
 bool is_executable(const std::string& path) {
     return access(path.c_str(), X_OK) == 0;
+}
+
+// Function to find an executable in the PATH
+std::string find_executable(const std::string& command) {
+    const char* path_env = std::getenv("PATH");
+    if (!path_env) return "";
+
+    std::string path_var(path_env);
+    std::vector<std::string> directories = split(path_var, ':');
+
+    for (const auto& dir : directories) {
+        std::string full_path = dir + "/" + command;
+        if (is_executable(full_path)) {
+            return full_path;
+        }
+    }
+    return ""; // Not found
 }
 
 int main() {
@@ -62,15 +60,14 @@ int main() {
         std::string first_word;
         iss >> first_word;
 
+        // Check if it's a built-in command
         switch (get_command(first_word)) {
             case CMD_ECHO: {
-                // Extract the remaining input after the command
                 std::string remaining;
                 std::getline(iss, remaining);
                 if (!remaining.empty()) {
-                    // Remove leading spaces before output
                     remaining.erase(0, remaining.find_first_not_of(' '));
-                    std::cout << remaining << std::endl; // Print the remaining text
+                    std::cout << remaining << std::endl;
                 } else {
                     std::cout << RED << "echo: missing argument" << RESET << std::endl;
                 }
@@ -81,31 +78,14 @@ int main() {
                 iss >> second_word;
 
                 if (!second_word.empty()) {
-                    // Check if the second word is a shell builtin
                     if (get_command(second_word) != CMD_UNKNOWN) {
                         std::cout << second_word << " is a shell builtin" << std::endl;
                     } else {
-                        // Search for the command in PATH
-                        if (const char* path_env = std::getenv("PATH")) {
-                            std::string path_var(path_env);
-                            std::vector<std::string> directories = split(path_var, ':');
-                            bool found = false;
-
-                            for (const auto& dir : directories) {
-                                std::string full_path = dir + "/";
-                                full_path.append(second_word);
-                                if (is_executable(full_path)) {
-                                    std::cout << second_word << " is " << full_path << std::endl;
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!found) {
-                                std::cout << RED << second_word << RESET << ": not found" << std::endl;
-                            }
+                        std::string executable = find_executable(second_word);
+                        if (!executable.empty()) {
+                            std::cout << second_word << " is " << executable << std::endl;
                         } else {
-                            std::cout << RED << "PATH not set" << RESET << std::endl;
+                            std::cout << RED << second_word << RESET << ": not found" << std::endl;
                         }
                     }
                 } else {
@@ -118,17 +98,54 @@ int main() {
                 iss >> argument;
 
                 if (argument == "0") {
-                    return 0; // Exit successfully
+                    return 0;
                 } else {
                     std::cout << RED << input << RESET << ": not found" << std::endl;
                 }
                 break;
             }
             case CMD_UNKNOWN:
-            default:
-                std::cout << RED << input << RESET << ": not found" << std::endl;
+            default: {
+                // Try to execute the command as an external program
+                std::string executable = find_executable(first_word);
+                if (!executable.empty()) {
+                    // Prepare arguments for execvp
+                    std::vector<std::string> args;
+                    args.push_back(executable);
+
+                    std::string arg;
+                    while (iss >> arg) {
+                        args.push_back(arg);
+                    }
+
+                    // Convert arguments to char* array
+                    std::vector<char*> argv;
+                    for (auto& arg : args) {
+                        argv.push_back(const_cast<char*>(arg.c_str()));
+                    }
+                    argv.push_back(nullptr);
+
+                    // Fork and execute
+                    pid_t pid = fork();
+                    if (pid == 0) {
+                        // Child process
+                        execvp(argv[0], argv.data());
+                        // If execvp fails
+                        std::cerr << RED << "Error: Failed to execute " << argv[0] << RESET << std::endl;
+                        exit(EXIT_FAILURE);
+                    } else if (pid > 0) {
+                        // Parent process
+                        int status;
+                        waitpid(pid, &status, 0);
+                    } else {
+                        // Fork failed
+                        std::cerr << RED << "Error: Failed to fork" << RESET << std::endl;
+                    }
+                } else {
+                    std::cout << RED << input << RESET << ": not found" << std::endl;
+                }
                 break;
+            }
         }
     }
-
 }
