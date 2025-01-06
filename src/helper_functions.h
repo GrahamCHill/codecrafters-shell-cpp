@@ -183,9 +183,39 @@ inline void cd_command(std::istringstream& input_string) {
     std::getline(input_string, remaining); // Read the remaining part of the input
     remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
 
-    if (remaining[0] == '/' && std::filesystem::exists(remaining))
-        currentWorkingDirectory = remaining;
-    else
-        std::cout << remaining << ": No such file or directory\n";
+    if (remaining.empty()) {
+        std::cout << RED << "cd: missing argument" << RESET << std::endl;
+        return;
+    }
+
+    std::string currentDirectory = get_current_directory_command();
+
+    // Check if the path is absolute or relative
+    std::string targetDirectory;
+
+    if (remaining[0] == '/') {
+        // Absolute path, no need to append to current directory
+        targetDirectory = std::getenv("HOME") + remaining;
+    } else {
+        // Relative path, append to the current working directory
+        targetDirectory = currentDirectory + "/" + remaining;
+    }
+
+    // Normalize the path (resolve relative components like "..")
+    std::filesystem::path path(targetDirectory);
+    try {
+        // Resolve the path
+        path = canonical(path);
+
+        // Check if the directory exists
+        if (!exists(path) || !is_directory(path)) {
+            std::cout << RED << "cd: " << path << ": No such file or directory" << RESET << std::endl;
+        } else {
+            // Set the new current working directory
+            set_current_directory_command(path.string());
+        }
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cout << RED << "cd: " << e.what() << RESET << std::endl;
+    }
 }
 #endif //HELPER_FUNCTIONS_H
