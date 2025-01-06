@@ -14,17 +14,19 @@ int main() {
     std::string input;
     std::getline(std::cin, input);
     std::istringstream iss(input);
-    std::string first_word, second_word;
+    std::string first_word;
     iss >> first_word;
     if (input == "exit 0")
       return 0;
     if (first_word == "echo") {
       std::string remaining;
       std::getline(iss, remaining);
-      remaining.erase(0, remaining.find_first_not_of(' '));
-      std::cout << remaining << std::endl;
+      remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
+      std::cout << remaining << std::endl; // Print the remaining text
     }
     else if (first_word == "type" && iss.peek() != EOF) {
+      std::string second_word;
+      iss >> second_word;
       std::cout << second_word << " is a shell builtin"<< std::endl;
     }
     else
