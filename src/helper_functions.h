@@ -205,10 +205,10 @@ inline void cd_command(std::istringstream& input_string) {
     std::filesystem::path path(targetDirectory);
     try {
         // Resolve the path
-        path = std::filesystem::canonical(path);
+        path = canonical(path);
 
         // Check if the directory exists
-        if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+        if (!exists(path) || !is_directory(path)) {
             std::cout << RED << "cd: " << path << ": No such file or directory" << RESET << std::endl;
         } else {
             // Set the new current working directory
