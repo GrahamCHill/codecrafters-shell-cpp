@@ -220,7 +220,8 @@ inline void cd_command(std::istringstream& input_string) {
             set_current_directory_command(path.string());
         }
     } catch (const std::filesystem::filesystem_error& e) {
-        std::cout << RED << "cd: " << e.what() << RESET << std::endl;
+        std::cout << RED << "cd: No such file or directory" << RESET << std::endl;
+        // "cd: /non-existing-directory: No such file or directory"
     }
 }
 #endif //HELPER_FUNCTIONS_H
