@@ -62,7 +62,7 @@ int main() {
                 if (!second_word.empty() && get_command(second_word) != CMD_UNKNOWN) {
                     std::cout << second_word << " is a shell builtin" << std::endl;
                 } else {
-                    std::cout << RED << input << RESET << ": not found" << std::endl;
+                    std::cout << RED << second_word << RESET << ": not found" << std::endl;
                 }
                 break;
             }
