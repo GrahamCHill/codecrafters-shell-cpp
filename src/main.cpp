@@ -2,6 +2,9 @@
 #include <sstream>
 #include <unordered_map>
 #include <string>
+#include <cstdlib>
+#include <vector>
+#include <unistd.h> // For access function
 
 #include "terminal_highlight.h" // Ensure this header is correctly included
 
@@ -23,6 +26,22 @@ Command get_command(const std::string& word) {
 
     const auto it = command_map.find(word);
     return it != command_map.end() ? it->second : CMD_UNKNOWN;
+}
+
+// Function to split a string by a delimiter
+std::vector<std::string> split(const std::string& str, const char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+// Function to check if a file exists and is executable
+bool is_executable(const std::string& path) {
+    return access(path.c_str(), X_OK) == 0;
 }
 
 int main() {
@@ -61,8 +80,34 @@ int main() {
                 std::string second_word;
                 iss >> second_word;
 
-                if (!second_word.empty() && get_command(second_word) != CMD_UNKNOWN) {
-                    std::cout << second_word << " is a shell builtin" << std::endl;
+                if (!second_word.empty()) {
+                    // Check if the second word is a shell builtin
+                    if (get_command(second_word) != CMD_UNKNOWN) {
+                        std::cout << second_word << " is a shell builtin" << std::endl;
+                    } else {
+                        // Search for the command in PATH
+                        if (const char* path_env = std::getenv("PATH")) {
+                            std::string path_var(path_env);
+                            std::vector<std::string> directories = split(path_var, ':');
+                            bool found = false;
+
+                            for (const auto& dir : directories) {
+                                std::string full_path = dir + "/";
+                                full_path.append(second_word);
+                                if (is_executable(full_path)) {
+                                    std::cout << second_word << " is " << full_path << std::endl;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                std::cout << RED << second_word << RESET << ": not found" << std::endl;
+                            }
+                        } else {
+                            std::cout << RED << "PATH not set" << RESET << std::endl;
+                        }
+                    }
                 } else {
                     std::cout << RED << second_word << RESET << ": not found" << std::endl;
                 }
@@ -86,5 +131,4 @@ int main() {
         }
     }
 
-    return 0;
 }
