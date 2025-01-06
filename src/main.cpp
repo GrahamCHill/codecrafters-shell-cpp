@@ -59,7 +59,7 @@ int main() {
                 std::string second_word;
                 iss >> second_word;
 
-                if (!second_word.empty()) {
+                if (!second_word.empty() && get_command(second_word) != CMD_UNKNOWN) {
                     std::cout << second_word << " is a shell builtin" << std::endl;
                 } else {
                     std::cout << RED << input << RESET << ": command not found" << std::endl;
