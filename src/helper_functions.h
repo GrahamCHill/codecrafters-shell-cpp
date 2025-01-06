@@ -9,11 +9,19 @@
 #include <vector>
 #include <unistd.h>    // For fork, execvp
 #include <sys/wait.h>  // For waitpid
-#include <limits.h>
+#include <climits>
+#include <iostream>
+#include <filesystem>
+#include <string>
+#include <sys/stat.h>
+#include <fstream>
+#include <sstream>
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024  // Define a custom value if PATH_MAX is not already defined
 #endif
+
+inline std::string currentWorkingDirectory;
 
 // Function to split a string by a delimiter
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
@@ -33,19 +41,30 @@ inline bool is_executable(const std::string& path) {
 
 // Function to find an executable in the PATH
 inline std::string find_executable(const std::string& command) {
+    // If a current working directory is provided, try searching within it first
+    std::string full_path = currentWorkingDirectory + "/" + command;
+    if (is_executable(full_path)) {
+        return full_path; // Return full path if executable is found in the given directory
+    }
+
+    // If not found, check in the directories listed in the PATH environment variable
     const char* path_env = std::getenv("PATH");
     if (!path_env) return "";
 
+    // System Path
     std::string path_var(path_env);
-    std::vector<std::string> directories = split(path_var, ':');
 
-    for (const auto& dir : directories) {
-        std::string full_path = dir + "/";
+    // Splitting each value in path
+    for (const std::vector<std::string> directories = split(path_var, ':');
+    // Check each directory in PATH for the executable
+        const auto& dir : directories) {
+        full_path = dir + "/";
         full_path.append(command);
         if (is_executable(full_path)) {
             return full_path;
         }
     }
+
     return ""; // Not found
 }
 
@@ -96,6 +115,12 @@ inline int exit_command(std::istringstream& input_string) {
 
 inline void attempt_exec_command(std::istringstream &input_string, const std::string &input, const std::string& first_word) {
     if (std::string executable = find_executable(first_word); !executable.empty()) {
+        // Change current working directory to global currentWorkingDirectory
+        if (chdir(currentWorkingDirectory.c_str()) != 0) {
+            std::cerr << RED << "Error: Failed to change directory to " << currentWorkingDirectory << RESET << std::endl;
+            return;
+        }
+
         // Prepare arguments for execvp
         std::vector<std::string> args;
         args.push_back(executable);
@@ -134,10 +159,67 @@ inline void attempt_exec_command(std::istringstream &input_string, const std::st
 }
 
 inline void pwd_command(std::istringstream& input_string) {
+    std::cout << currentWorkingDirectory << std::endl; // Print the current working directory
+}
+
+inline void set_initial_directory_command() {
     if (char buffer[PATH_MAX]; getcwd(buffer, sizeof(buffer)) != nullptr) {
-        std::cout << buffer << std::endl; // Print the current working directory
+        currentWorkingDirectory.append(buffer); // Print the current working directory
+    }
+}
+
+inline std::string get_current_directory_command() {
+    return currentWorkingDirectory;
+}
+
+inline void set_current_directory_command(const std::string& currentDirectory) {
+    currentWorkingDirectory = currentDirectory;
+}
+
+
+
+inline void cd_command(std::istringstream& input_string) {
+    std::string remaining;
+    std::getline(input_string, remaining); // Read the remaining part of the input
+    remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
+    std::string currentDirectory = get_current_directory_command();
+
+    if (remaining.empty()) {
+        std::cout << RED << "cd: missing argument" << RESET << std::endl;
     } else {
-        std::cout << "pwd: error retrieving current directory" << std::endl;
+        // Split the remaining path into parts
+        std::vector<std::string> pathParts;
+        std::istringstream pathStream(remaining);
+        std::string part;
+        
+        while (std::getline(pathStream, part, '/')) {
+            pathParts.push_back(part);
+        }
+
+        // Process each part of the path
+        for (const std::string& part : pathParts) {
+            if (part == "..") {
+                // Move up one directory if not already at the root
+                if (currentDirectory != "/") {
+                    const auto pos = currentDirectory.find_last_of('/');
+                    currentDirectory = currentDirectory.substr(0, pos);
+                    if (currentDirectory.empty()) {
+                        currentDirectory = "/";  // Prevent going above root
+                    }
+                }
+            } else if (!part.empty() && part != ".") {
+                // Append directory part if it's not empty or "."
+                currentDirectory += "/" + part;
+            }
+        }
+
+        // Check if the directory exists
+        if (!std::filesystem::exists(currentDirectory) || !std::filesystem::is_directory(currentDirectory)) {
+            std::cout << RED << "cd: /" << part << ": No such file or directory" << RESET << std::endl;
+        } else {
+            // Set the new current working directory
+            set_current_directory_command(currentDirectory);
+        }
     }
 }
 #endif //HELPER_FUNCTIONS_H

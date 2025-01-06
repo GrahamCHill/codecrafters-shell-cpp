@@ -13,7 +13,8 @@ enum Command {
     CMD_TYPE,
     CMD_EXIT_0,
     CMD_UNKNOWN,
-    CMD_PWD
+    CMD_PWD,
+    CMD_CD
 };
 
 // Function to map string commands to enum
@@ -22,7 +23,8 @@ inline Command get_command(const std::string& word) {
         {"echo", CMD_ECHO},
         {"type", CMD_TYPE},
         {"exit", CMD_EXIT_0}, // We handle "exit 0" separately
-        {"pwd", CMD_PWD}
+        {"pwd", CMD_PWD},
+        {"cd", CMD_CD}
     };
 
     const auto it = command_map.find(word);

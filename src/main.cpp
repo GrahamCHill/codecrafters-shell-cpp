@@ -8,6 +8,9 @@
 #include "helper_functions.h"
 
 int main() {
+    set_initial_directory_command();
+    std::string currentDirectory = get_current_directory_command();
+    set_current_directory_command(currentDirectory);
     // Flush after every std::cout / std::cerr
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
@@ -45,6 +48,9 @@ int main() {
             case CMD_PWD: {
                 pwd_command(iss);
                 break;
+            }
+            case CMD_CD: {
+                cd_command(iss);
             }
             case CMD_UNKNOWN:
             default: {
