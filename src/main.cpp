@@ -73,13 +73,13 @@ int main() {
                 if (argument == "0") {
                     return 0; // Exit successfully
                 } else {
-                    std::cout << RED << input << RESET << ": command not found" << std::endl;
+                    std::cout << RED << input << RESET << ": not found" << std::endl;
                 }
                 break;
             }
             case CMD_UNKNOWN:
             default:
-                std::cout << RED << input << RESET << ": command not found" << std::endl;
+                std::cout << RED << input << RESET << ": not found" << std::endl;
                 break;
         }
     }
