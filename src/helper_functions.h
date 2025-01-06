@@ -218,6 +218,5 @@ inline void cd_command(std::istringstream& input_string) {
     } catch (const std::filesystem::filesystem_error& e) {
         std::cout << RED << "cd: " << e.what() << RESET << std::endl;
     }
-    attempt_exec_command(input_string, remaining, "ls");
 }
 #endif //HELPER_FUNCTIONS_H
