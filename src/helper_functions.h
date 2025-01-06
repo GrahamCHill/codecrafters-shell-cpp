@@ -9,6 +9,7 @@
 #include <vector>
 #include <unistd.h>    // For fork, execvp
 #include <sys/wait.h>  // For waitpid
+#include <limits.h>
 
 // Function to split a string by a delimiter
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
