@@ -27,4 +27,5 @@ inline Command get_command(const std::string& word) {
     return it != command_map.end() ? it->second : CMD_UNKNOWN;
 }
 
+
 #endif //COMMANDS_H
