@@ -127,4 +127,12 @@ inline void attempt_exec_command(std::istringstream &input_string, const std::st
     }
 }
 
+inline void pwd_command(std::istringstream& input_string) {
+    char buffer[PATH_MAX];
+    if (getcwd(buffer, sizeof(buffer)) != nullptr) {
+        std::cout << buffer << std::endl; // Print the current working directory
+    } else {
+        std::cout << "pwd: error retrieving current directory" << std::endl;
+    }
+}
 #endif //HELPER_FUNCTIONS_H

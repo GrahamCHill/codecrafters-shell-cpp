@@ -42,6 +42,10 @@ int main() {
                 std::cout << RED << input << RESET << ": not found" << std::endl;
                 break;
             }
+            case CMD_PWD: {
+                pwd_command(iss);
+                break;
+            }
             case CMD_UNKNOWN:
             default: {
                 // Try to execute the command as an external program
