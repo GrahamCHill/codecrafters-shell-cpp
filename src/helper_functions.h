@@ -117,7 +117,6 @@ inline int exit_command(std::istringstream& input_string) {
 
 inline void attempt_exec_command(std::istringstream &input_string, const std::string &input, const std::string& first_word) {
     std::string second_word;
-    input_string >> second_word;
     if (first_word == "cd") {
         // Call the built-in `cd_command`
         cd_command(second_word);
@@ -136,6 +135,11 @@ inline void attempt_exec_command(std::istringstream &input_string, const std::st
 
         std::string arg;
         while (input_string >> arg) {
+            if (first_word == "cd") {
+                // Call the built-in `cd_command`
+                cd_command(arg);
+                return;
+            }
             args.push_back(arg);
         }
 
