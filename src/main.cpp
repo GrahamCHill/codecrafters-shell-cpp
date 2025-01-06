@@ -1,19 +1,21 @@
 #include <iostream>
 #include <sstream>
 
+#include "terminal_highlight.h"
+
 int main() {
+
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
+  std::cout << "$ ";
 
   while (true) {
-    std::cout << "$ ";
-
     std::string input;
     std::getline(std::cin, input);
     std::istringstream iss(input);
     std::string first_word, second_word;
-    iss >> first_word >> second_word;
+    iss >> first_word;
     if (input == "exit 0")
       return 0;
     if (first_word == "echo") {
@@ -22,11 +24,15 @@ int main() {
       remaining.erase(0, remaining.find_first_not_of(' '));
       std::cout << remaining << std::endl;
     }
-    else if (first_word == "type" && !second_word.empty()) {
-      std::cerr << first_word << " is a shell builtin \n";
+    else if (first_word == "type" && iss.peek() != EOF) {
+      std::cout << second_word << " is a shell builtin"<< std::endl;
     }
     else
-      std::cerr << input << ": command not found" << std::endl;
+      std::cout << RED << input << ":"<< RESET << " command not found" << std::endl;
+
+
+    std::cout << "$ ";
+
   }
 
 }
