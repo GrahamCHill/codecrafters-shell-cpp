@@ -212,6 +212,10 @@ inline void cd_command(std::istringstream& input_string) {
         if (!exists(path) || !is_directory(path)) {
             std::cout << RED << "cd: " << path << ": No such file or directory" << RESET << std::endl;
         } else {
+            if (remaining[0] == '/') {
+                // Absolute path, no need to append to current directory
+                path = remaining;
+            }
             // Set the new current working directory
             set_current_directory_command(path.string());
         }
