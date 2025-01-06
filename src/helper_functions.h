@@ -23,7 +23,6 @@
 
 inline std::string currentWorkingDirectory;
 void cd_command(std::istringstream& input_string);
-void cd_command(std::string& input_string);
 
 // Function to split a string by a delimiter
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
@@ -116,10 +115,8 @@ inline int exit_command(std::istringstream& input_string) {
 }
 
 inline void attempt_exec_command(std::istringstream &input_string, const std::string &input, const std::string& first_word) {
-    std::string second_word;
     if (first_word == "cd") {
-        // Call the built-in `cd_command`
-        cd_command(second_word);
+        cd_command(input_string);
         return;
     }
     if (std::string executable = find_executable(first_word); !executable.empty()) {
@@ -135,11 +132,6 @@ inline void attempt_exec_command(std::istringstream &input_string, const std::st
 
         std::string arg;
         while (input_string >> arg) {
-            if (first_word == "cd") {
-                // Call the built-in `cd_command`
-                cd_command(arg);
-                return;
-            }
             args.push_back(arg);
         }
 
@@ -194,51 +186,6 @@ inline void set_current_directory_command(const std::string& currentDirectory) {
 inline void cd_command(std::istringstream& input_string) {
     std::string remaining;
     std::getline(input_string, remaining); // Read the remaining part of the input
-    remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
-
-    if (remaining.empty()) {
-        std::cout << RED << "cd: missing argument" << RESET << std::endl;
-        return;
-    }
-
-    std::string currentDirectory = get_current_directory_command();
-
-    // Check if the path is absolute or relative
-    std::string targetDirectory;
-
-    if (remaining[0] == '/') {
-        // Absolute path, no need to append to current directory
-        const char* home = "/";
-        targetDirectory = home + remaining;
-    } else {
-        // Relative path, append to the current working directory
-        targetDirectory = currentDirectory + "/" + remaining;
-    }
-
-    // Normalize the path (resolve relative components like "..")
-    std::filesystem::path path(targetDirectory);
-    try {
-        // Resolve the path
-        path = canonical(path);
-
-        // Check if the directory exists
-        if (!exists(path) || !is_directory(path)) {
-            std::cout << RED << "cd: " << path << ": No such file or directory" << RESET << std::endl;
-        } else {
-            if (remaining[0] == '/') {
-                // Absolute path, no need to append to current directory
-                path = std::filesystem::canonical(remaining);
-            }
-            // Set the new current working directory
-            set_current_directory_command(path.string());
-        }
-    } catch (const std::filesystem::filesystem_error& e) {
-        std::cout << RED << "cd: " << e.what() << RESET << std::endl;
-    }
-}
-
-inline void cd_command(std::string& input_string) {
-    std::string remaining = input_string;
     remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
 
     if (remaining.empty()) {
