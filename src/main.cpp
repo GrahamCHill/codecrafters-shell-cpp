@@ -51,7 +51,8 @@ int main() {
             }
             case CMD_CD: {
                 cd_command(iss);
-                attempt_exec_command(iss, "", "ls");
+                // attempt_exec_command(iss, "", "ls");
+                break;
             }
             case CMD_UNKNOWN:
             default: {
