@@ -19,6 +19,7 @@ int main() {
     if (first_word == "echo") {
       std::string remaining;
       std::getline(iss, remaining);
+      remaining.erase(0, remaining.find_first_not_of(' '));
       std::cout << remaining << std::endl;
     }
     else
