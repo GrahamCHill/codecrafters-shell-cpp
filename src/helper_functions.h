@@ -80,20 +80,39 @@ inline void echo_command(std::istringstream& input_string) {
         return;
     }
     if (remaining[0] == '\'') {
-        for (int i = 1; i < remaining.size(); i++) {
-            if (remaining[i] != '\'') {
-                output += remaining[i];
+        for (const char i : remaining) {
+            if (i != '\'') {
+                output += i;
             }
-            if (remaining[i] == '\'') {
+            if (i == '\'') {
                 blockQuote++;
             }
         }
     }
-    if (blockQuote > 2) {
-        std::cout <<"\"" << output <<"\"" << std::endl; // Output the remaining input as is
-    } else {
-        std::cout << output << std::endl; // Output the remaining input as is
+    else {
+        bool previous_was_space = false;
+
+        for (const char i : remaining) {
+            if (i == ' ') {
+                if (!previous_was_space) {
+                    output += i; // Add the first space
+                }
+                previous_was_space = true; // Mark that we encountered a space
+            } else {
+                output += i;              // Add non-space characters
+                previous_was_space = false; // Reset the flag
+            }
+        }
     }
+    // if (blockQuote > 2 && blockQuote % 2 != 0) {
+    //     std::cout << BOLD << "quote> " << RESET;
+    //     std::cin >> temp;
+    //
+    // }
+    if (blockQuote % 2 && blockQuote > 2) {
+        output = "\"" + output + "\"";
+    }
+        std::cout << output << std::endl; // Output the remaining input as is
 }
 
 // Function for determining type of second argument (ie echo, exit, etc.)
