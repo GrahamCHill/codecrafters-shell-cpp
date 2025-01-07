@@ -76,7 +76,13 @@ inline void echo_command(std::istringstream& input_string) {
     // Check if there's any remaining input
     if (remaining.empty() || remaining.find_first_not_of(' ') == std::string::npos) {
         std::cout << RED << "echo: missing argument" << RESET << std::endl;
-    } else {
+    } else if (remaining[0] == '\'') {
+        for (const char c : remaining) {
+            std::cout << c;
+        }
+        std::cout << std::endl;
+    }
+    else{
         std::cout << remaining << std::endl; // Output the remaining input as is
     }
 }
@@ -176,8 +182,6 @@ inline void set_current_directory_command(const std::string& currentDirectory) {
     currentWorkingDirectory = currentDirectory;
 }
 
-
-
 inline void cd_command(std::istringstream& input_string) {
     std::string remaining;
     std::getline(input_string, remaining); // Read the remaining part of the input
@@ -224,7 +228,6 @@ inline void cd_command(std::istringstream& input_string) {
         }
     } catch (const std::filesystem::filesystem_error& e) {
         std::cout << RED << "cd: " << remaining << ": No such file or directory" << RESET << std::endl;
-        // "cd: /non-existing-directory: No such file or directory"
     }
 }
 #endif //HELPER_FUNCTIONS_H
