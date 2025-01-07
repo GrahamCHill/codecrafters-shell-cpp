@@ -77,8 +77,8 @@ inline void echo_command(std::istringstream& input_string) {
     if (remaining.empty() || remaining.find_first_not_of(' ') == std::string::npos) {
         std::cout << RED << "echo: missing argument" << RESET << std::endl;
     } else if (remaining[0] == '\'') {
-        for (const char c : remaining) {
-            std::cout << c;
+        for (int i = 1; i < remaining.size() -1; i++) {
+            std::cout << remaining[i];
         }
         std::cout << std::endl;
     }
