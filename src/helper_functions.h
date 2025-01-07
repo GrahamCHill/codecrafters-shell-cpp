@@ -72,20 +72,31 @@ inline std::string find_executable(const std::string& command) {
 inline void echo_command(std::istringstream& input_string) {
     std::string remaining;
     std::getline(input_string, remaining); // Read the remaining part of the input
-    remaining.erase(0, remaining.find_first_not_of(' '));
-    // Check if there's any remaining input
+    remaining.erase(0, remaining.find_first_not_of(' ')); // Remove leading spaces
+
     if (remaining.empty() || remaining.find_first_not_of(' ') == std::string::npos) {
-        std::cout << RED << "echo: missing argument" << RESET << std::endl;
-    } else if (remaining[0] == '\'') {
-        for (int i = 1; i < remaining.size() -1; i++) {
-            std::cout << remaining[i];
+        std::cerr << "echo: missing argument" << std::endl;
+    } else if (remaining[0] == '\'' && remaining.back() == '\'') {
+        // If input starts and ends with single quotes, print the content inside the quotes
+        std::cout << remaining.substr(1, remaining.size() - 2) << std::endl;
+    } else {
+        // Remove extra spaces between words
+        std::istringstream iss(remaining);
+        std::string word;
+        bool first_word = true;
+
+        while (iss >> word) {
+            if (!first_word) {
+                std::cout << ' '; // Add a single space between words
+            }
+            std::cout << word;
+            first_word = false;
         }
+
         std::cout << std::endl;
     }
-    else{
-        std::cout << remaining << std::endl; // Output the remaining input as is
-    }
 }
+
 
 // Function for determining type of second argument (ie echo, exit, etc.)
 inline void type_command(std::istringstream& input_string) {
